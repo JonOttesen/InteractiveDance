@@ -13,8 +13,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-
-dataset = AISTDataset("mnt/CRAI-NAS/all/jona/dance_data")
+dataset = AISTDataset("/mnt/CRAI-NAS/all/jona/dance_data")
 
 train_loader = Dataloader(
     dataset, 
