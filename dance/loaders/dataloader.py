@@ -10,7 +10,7 @@ import librosa
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from aist_plusplus.loader import AISTDataset
+from .loader import AISTDataset
 
 import warnings
 warnings.filterwarnings("ignore")

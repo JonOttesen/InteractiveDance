@@ -7,7 +7,7 @@ from dance.loaders.dataloader import Dataloader
 from dance.models.fact.fact import FACTModel
 from dance.models.fact.config import audio_config, fact_model, motion_config, multi_model_config
 
-from aist_plusplus.loader import AISTDataset
+from dance.loaders.loader import AISTDataset
 
 import warnings
 warnings.filterwarnings("ignore")
