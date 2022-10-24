@@ -69,7 +69,7 @@ train_loader = torch.utils.data.DataLoader(dataset=train_loader,
 
 valid_loader = torch.utils.data.DataLoader(dataset=val_loader,
                                            num_workers=8,
-                                           batch_size=1,
+                                           batch_size=config["batch_size"],
                                            shuffle=True)
 
 optimizer = torch.optim.Adam(
