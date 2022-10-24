@@ -1,0 +1,24 @@
+{
+    "os": "Linux-5.15.0-52-generic-x86_64-with-glibc2.35",
+    "python": "3.9.12",
+    "heartbeatAt": "2022-10-24T12:32:36.177345",
+    "startedAt": "2022-10-24T12:32:34.238097",
+    "docker": null,
+    "gpu": "NVIDIA GeForce RTX 3060 Laptop GPU",
+    "gpu_count": 1,
+    "cpu_count": 16,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/home/jon/Documents/dance/InteractiveDance/train.py",
+    "codePath": "train.py",
+    "git": {
+        "remote": "git@github.com:JonOttesen/InteractiveDance.git",
+        "commit": "dabcdc4c55604b9fc3884d6d8efc9b68911e796b"
+    },
+    "email": "joniandre1497@hotmail.com",
+    "root": "/home/jon/Documents/dance/InteractiveDance",
+    "host": "jon-ROG-Zephyrus-G14-GA401QM-GA401QM",
+    "username": "jon",
+    "executable": "/home/jon/miniconda3/envs/seg/bin/python"
+}

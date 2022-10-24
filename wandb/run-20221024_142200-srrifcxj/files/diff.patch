@@ -1,0 +1,42 @@
+diff --git a/dance/models/fact/fact.py b/dance/models/fact/fact.py
+index 941bb7d..e17a598 100644
+--- a/dance/models/fact/fact.py
++++ b/dance/models/fact/fact.py
+@@ -12,12 +12,11 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ """The main FACT model and related functions."""
+-import copy
+-from base_model_util import *
+-from base_models import *
+-from multi_modal_model_util import *
++from .base_model_util import *
++from .base_models import *
++from .multi_modal_model_util import *
+ 
+-from config import audio_config, motion_config, multi_model_config
++from .config import audio_config, motion_config, multi_model_config
+ 
+ import torch
+ import torch.nn as nn
+@@ -84,7 +83,6 @@ class FACTModel(nn.Module):
+     motion_features = self.motion_linear_embedding(inputs["motion_input"])
+     motion_features = self.motion_pos_embedding(motion_features)
+     motion_features = self.motion_transformer(motion_features)
+-    
+ 
+     # Computes audio features.
+     audio_features = self.audio_linear_embedding(inputs["audio_input"])
+@@ -141,9 +139,4 @@ if __name__ == '__main__':
+         "motion_input": torch.ones([2, 120, 225], dtype=torch.float32).to("cuda:0"),
+         "audio_input": torch.ones([2, 240, 35], dtype=torch.float32).to("cuda:0"),
+     }
+-    for i in range(10):
+-        model(features)
+-    start = time.time()
+-    for i in range(1200):
+-        model(features)
+-    print(time.time() - start)
+\ No newline at end of file
++    out = model(features)
+\ No newline at end of file

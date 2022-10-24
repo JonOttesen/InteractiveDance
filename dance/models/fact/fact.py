@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """The main FACT model and related functions."""
-import copy
-from base_model_util import *
-from base_models import *
-from multi_modal_model_util import *
+from .base_model_util import *
+from .base_models import *
+from .multi_modal_model_util import *
 
-from config import audio_config, motion_config, multi_model_config
+from .config import audio_config, motion_config, multi_model_config
 
 import torch
 import torch.nn as nn
@@ -26,7 +25,7 @@ import torch.nn as nn
 class FACTModel(nn.Module):
   """Audio Motion Multi-Modal model."""
 
-  def __init__(self, audio_config, motion_config, cross_modal_config, out_dim: int = 225):
+  def __init__(self, audio_config, motion_config, cross_modal_config, out_dim: int = 225, pred_length: int = 20):
     """Initializer for FACTModel.
 
     Args:
@@ -37,6 +36,7 @@ class FACTModel(nn.Module):
     super().__init__()
 
     self.cross_modal_layer = CrossModalLayer(cross_modal_config, out_dim=out_dim)
+    self.pred_length = pred_length
 
     self.motion_transformer = Transformer(
         in_features=motion_config.transformer.hidden_size,
@@ -84,7 +84,6 @@ class FACTModel(nn.Module):
     motion_features = self.motion_linear_embedding(inputs["motion_input"])
     motion_features = self.motion_pos_embedding(motion_features)
     motion_features = self.motion_transformer(motion_features)
-    
 
     # Computes audio features.
     audio_features = self.audio_linear_embedding(inputs["audio_input"])
@@ -94,7 +93,7 @@ class FACTModel(nn.Module):
     # Computes cross modal output.
     output = self.cross_modal_layer(motion_features, audio_features)
 
-    return output
+    return output[:, :self.pred_length]
 
   def infer_auto_regressive(self, inputs, steps=1200):
     """Predict sequences from inputs in an auto-regressive manner. 
@@ -141,9 +140,4 @@ if __name__ == '__main__':
         "motion_input": torch.ones([2, 120, 225], dtype=torch.float32).to("cuda:0"),
         "audio_input": torch.ones([2, 240, 35], dtype=torch.float32).to("cuda:0"),
     }
-    for i in range(10):
-        model(features)
-    start = time.time()
-    for i in range(1200):
-        model(features)
-    print(time.time() - start)
+    out = model(features)
