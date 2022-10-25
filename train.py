@@ -42,6 +42,7 @@ metrics = {
 audio_config.transformer.intermediate_size = 1536
 motion_config.transformer.intermediate_size = 1536
 multi_model_config.transformer.intermediate_size = 1536
+multi_model_config.transformer.num_hidden_layers =  6
 
 model = FACTModel(audio_config, motion_config, multi_model_config, pred_length=20)
 
