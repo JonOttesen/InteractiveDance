@@ -1,4 +1,3 @@
-from email.mime import audio
 import torch
 
 import numpy as np
@@ -39,10 +38,10 @@ metrics = {
     'L1': torch.nn.L1Loss(),
     }
 
-audio_config.transformer.intermediate_size = 1536
-motion_config.transformer.intermediate_size = 1536
-multi_model_config.transformer.intermediate_size = 1536
-multi_model_config.transformer.num_hidden_layers =  6
+# audio_config.transformer.intermediate_size = 1536
+# motion_config.transformer.intermediate_size = 1536
+# multi_model_config.transformer.intermediate_size = 1536
+# multi_model_config.transformer.num_hidden_layers =  6
 
 model = FACTModel(audio_config, motion_config, multi_model_config, pred_length=20)
 
@@ -62,7 +61,7 @@ config = {
     "learning_rate": 1e-4,
     "optimizer": "Adam",
     "lr_scheduler": "CosineAnnealingLR",
-    "save_dir": "/mnt/CRAI-NAS/all/jona/dance_models/small",
+    "save_dir": "/mnt/CRAI-NAS/all/jona/dance_models/original",
     "save_period": 10,
 }
 
