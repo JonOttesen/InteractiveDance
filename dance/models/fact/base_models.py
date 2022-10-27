@@ -112,7 +112,6 @@ class Transformer(nn.Module):
         intermediate_size=3072,
         ):
         super().__init__()
-
         blocks = []
         blocks.extend([
               Residual(Norm(Attention(in_features, hidden_size, heads=num_attention_heads), hidden_size)),
@@ -126,7 +125,7 @@ class Transformer(nn.Module):
         self.net = nn.Sequential(*blocks)
 
     def forward(self, x):
-      return self.net(x)
+        return self.net(x)
 
 
 class PatchEmbedding(nn.Module):
