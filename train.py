@@ -60,6 +60,7 @@ config = {
     "batch_size": 16,
     "learning_rate": 1e-4,
     "optimizer": "Adam",
+    "weight_decay": 0.01,
     "lr_scheduler": "CosineAnnealingLR",
     "save_dir": "/mnt/CRAI-NAS/all/jona/dance_models/tiny_mse",
     "save_period": 10,
@@ -79,7 +80,7 @@ valid_loader = torch.utils.data.DataLoader(dataset=val_loader,
 optimizer = torch.optim.Adam(
     model.parameters(), 
     lr=config['learning_rate'],  
-    weight_decay=0,
+    weight_decay=config["weight_decay"],
     )
 
 
@@ -103,7 +104,7 @@ trainer = Trainer(
     # log_step=2500,
     device='cuda:0',
     project="dance_gen",
-    tags=["tiny_mse"],
+    tags=["tiny"],
     # resume_id="elf7qts1"
     )
 

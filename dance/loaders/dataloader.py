@@ -2,6 +2,7 @@ import glob
 import os
 from typing import Union
 from pathlib import Path
+from copy import deepcopy
 
 from tqdm import tqdm
 
@@ -63,11 +64,15 @@ class Dataloader:
         config: dict,
         keypoint_dir: Union[str, Path],
         split: str = "train",
+        no_preprocessed: bool = False,
+        return_smpl: bool = False,
         ) -> None:
         
         self.dataset = dataset
         self.audio_dir = audio_dir
         self.config = config
+        self.no_preprocessed = no_preprocessed
+        self.return_smpl = return_smpl
 
         self.seq_len = self.config["sequence_length"]
         self.audio_len = self.config["audio_length"]
@@ -79,11 +84,12 @@ class Dataloader:
         self.indices = list()
         self.dances = dict()
         self.music = dict()
+        self.smpl = dict()
         
-        self._store_in_memory(keypoint_dir, split)
+        self._store_in_memory(split)
 
     
-    def _store_in_memory(self, keypoint_dir, split):
+    def _store_in_memory(self, split):
         path = Path(self.dataset.motion_dir).parent
         if split == "train":
             path = path / Path("splits/crossmodal_train.txt")
@@ -94,9 +100,9 @@ class Dataloader:
         
         files = np.loadtxt(path, dtype=str)
         ignore_list = np.loadtxt(self.dataset.filter_file, dtype=str)
-        dances = dict()
 
         sec = 0
+
         for f in tqdm(files):
             # file_path = os.path.join(self.dataset.motion_dir, f + ".pkl")
             if f in ignore_list:
@@ -105,15 +111,17 @@ class Dataloader:
             piece = f
             music = piece.split("_")[-2]
             smpl_poses, smpl_scaling, smpl_trans = self.dataset.load_motion(self.dataset.motion_dir, piece)
+            self.smpl[piece] = (deepcopy(smpl_poses), deepcopy(smpl_scaling), deepcopy(smpl_trans))
 
             smpl_trans /= smpl_scaling
             smpl_poses = R.from_rotvec(
             smpl_poses.reshape(-1, 3)).as_matrix().reshape(smpl_poses.shape[0], -1)
+
             smpl_motion = np.concatenate([smpl_trans, smpl_poses], axis=-1)
     
             smpl_motion = np.pad(smpl_motion, [[0, 0], [6, 0]])
 
-            self.dances[piece] = smpl_motion
+            self.dances[piece] = deepcopy(smpl_motion)
             if music not in self.music.keys():
                 audio_feature = audio_features(self.audio_dir, music)
                 self.music[music] = audio_feature
@@ -129,6 +137,8 @@ class Dataloader:
                 frames = min(audio_frames, motion_frames)
                 for i in range(0, frames):
                     self.indices.append((i, music_name, dance_name))
+                    if split == "test" and self.no_preprocessed:
+                        break
     
     def __len__(self):
         return len(self.indices)
@@ -138,6 +148,11 @@ class Dataloader:
 
         audio = self.music[music_name]
         dance = self.dances[dance_name]
+
+        if self.no_preprocessed:
+            if self.return_smpl:
+                return self.smpl[dance_name], audio
+            return dance, audio
 
         x = dance[frame:frame + self.seq_len]
         y = dance[frame + self.seq_len:frame + self.seq_len + self.target_len]

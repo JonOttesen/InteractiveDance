@@ -35,6 +35,10 @@ class FACTModel(nn.Module):
     """
     super().__init__()
 
+    self.audio_config = audio_config
+    self.motion_config = motion_config
+    self.cross_modal_config = cross_modal_config
+
     self.cross_modal_layer = CrossModalLayer(cross_modal_config, out_dim=out_dim)
     self.pred_length = pred_length
 
@@ -112,18 +116,19 @@ class FACTModel(nn.Module):
       [batch_size, steps, motion_feature_dimension]
       will be return.
     """
-    audio_seq_length = self.feature_to_params["audio"]["sequence_length"]
+    audio_seq_length = self.audio_config.sequence_length
     outputs = []
     motion_input = inputs["motion_input"]
     for i in range(steps):
-      audio_input = inputs["audio_input"][:, i: i + audio_seq_length]
-      if tf.shape(audio_input)[1] < audio_seq_length:
-        break
-      output = self.call({"motion_input": motion_input, "audio_input": audio_input})
-      output = output[:, 0:1, :]  # only keep the first frame
-      outputs.append(output)
-      # update motion input
-      motion_input = torch.cat([motion_input[:, 1:, :], output], dim=1)
+        audio_input = inputs["audio_input"][:, i: i + audio_seq_length]
+        if audio_input.shape[1] < audio_seq_length:
+          break
+        output = self.forward({"motion_input": motion_input, "audio_input": audio_input})
+        output = output[:, 0:1, :]  # only keep the first frame
+        
+        outputs.append(output)
+        # update motion input
+        motion_input = torch.cat([motion_input[:, 1:, :], output], dim=1)
     return torch.cat(outputs, dim=1)
 
 if __name__ == '__main__':
