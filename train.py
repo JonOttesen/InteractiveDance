@@ -87,7 +87,8 @@ lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, \
     T_max=config['epochs'], eta_min=0, last_epoch=-1, verbose=False)
 
 
-loss = torch.nn.L1Loss()
+# loss = torch.nn.L1Loss()
+loss = torch.nn.MSELoss()
 
 trainer = Trainer(
     model=model,
@@ -102,7 +103,7 @@ trainer = Trainer(
     # log_step=2500,
     device='cuda:0',
     project="dance_gen",
-    tags=["tiny"],
+    tags=["tiny_mse"],
     # resume_id="elf7qts1"
     )
 
