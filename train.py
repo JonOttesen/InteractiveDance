@@ -104,7 +104,7 @@ trainer = Trainer(
     # log_step=2500,
     device='cuda:0',
     project="dance_gen",
-    tags=["tiny"],
+    # tags=["tiny"],
     # resume_id="elf7qts1"
     )
 

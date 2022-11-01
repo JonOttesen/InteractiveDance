@@ -41,12 +41,22 @@ def main():
         keypoint_dir="motions",
         no_preprocessed=False,
         return_smpl=False,
-        split="test",
+        split="train",
         )
+
+    test_loader = torch.utils.data.DataLoader(
+        dataset=loader,
+        num_workers=8,
+        batch_size=4,
+        shuffle=True,
+        )
+
+    for i, (motion, audio, target) in enumerate(test_loader):
+        print(i)
 
     for i, (motion, audio, target) in enumerate(loader):
         # get real data motion beats
-
+        continue
         inp = {"motion_input": motion.unsqueeze(0).to("cuda:0"), "audio_input": audio.unsqueeze(0).to("cuda:0")}
         with torch.no_grad():
             pred = model(inp).cpu().numpy()[0]
