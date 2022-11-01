@@ -145,7 +145,6 @@ class Dataloader:
 
     def __getitem__(self, index) -> torch.Tensor:
         frame, music_name, dance_name = self.indices[index]
-        print(frame, music_name, dance_name)
 
         audio = self.music[music_name]
         dance = self.dances[dance_name]
