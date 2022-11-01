@@ -60,7 +60,7 @@ config = {
     "batch_size": 16,
     "learning_rate": 1e-4,
     "optimizer": "Adam",
-    "weight_decay": 0.01,
+    "weight_decay": 1e-5,
     "lr_scheduler": "CosineAnnealingLR",
     "save_dir": "/mnt/CRAI-NAS/all/jona/dance_models/tiny_mse",
     "save_period": 10,
@@ -88,8 +88,8 @@ lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, \
     T_max=config['epochs'], eta_min=0, last_epoch=-1, verbose=False)
 
 
-# loss = torch.nn.L1Loss()
-loss = torch.nn.MSELoss()
+loss = torch.nn.L1Loss()
+# loss = torch.nn.MSELoss()
 
 trainer = Trainer(
     model=model,
