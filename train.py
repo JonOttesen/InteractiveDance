@@ -61,7 +61,7 @@ config = {
     "learning_rate": 1e-4,
     "optimizer": "Adam",
     "lr_scheduler": "CosineAnnealingLR",
-    "save_dir": "/mnt/CRAI-NAS/all/jona/dance_models/tiny",
+    "save_dir": "/mnt/CRAI-NAS/all/jona/dance_models/tiny_mse",
     "save_period": 10,
 }
 
