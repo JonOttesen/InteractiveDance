@@ -1,0 +1,1 @@
+tiny_mse/2022-11-01 -> batch size 16, small model, L1 loss (wrong in name), weight decay.

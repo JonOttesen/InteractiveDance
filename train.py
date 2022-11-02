@@ -61,7 +61,7 @@ config = {
     "learning_rate": 1e-4,
     "optimizer": "Adam",
     "weight_decay": 1e-5,
-    "warmup_steps": 0,
+    "warmup_steps": 10,
     "lr_scheduler": "CosineAnnealingLR",
     "save_dir": "/mnt/CRAI-NAS/all/jona/dance_models/tiny_warmup",
     "save_period": 10,
