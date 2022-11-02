@@ -102,8 +102,8 @@ lr_scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, schedulers=[sche
 # lr_scheduler = config.lr_scheduler(optimizer=optimizer)
 
 
-lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, \
-    T_max=config['epochs'] - config["warmup_steps"], eta_min=0, last_epoch=-1, verbose=False)
+# lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, \
+    # T_max=config['epochs'] - config["warmup_steps"], eta_min=0, last_epoch=-1, verbose=False)
 
 
 loss = torch.nn.L1Loss()
