@@ -96,7 +96,7 @@ class LRPolicy(object):
 warmup_steps = config["warmup_steps"]
 
 scheduler1 = torch.optim.lr_scheduler.LambdaLR(optimizer,  LRPolicy(initial=1e-2, warmup_steps=warmup_steps))
-scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=int(config.epochs - warmup_steps))
+scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=int(config['epochs'] - warmup_steps), eta_min=0, last_epoch=-1, verbose=False)
 
 lr_scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, schedulers=[scheduler1, scheduler2], milestones=[warmup_steps])
 # lr_scheduler = config.lr_scheduler(optimizer=optimizer)
