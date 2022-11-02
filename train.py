@@ -85,8 +85,25 @@ optimizer = torch.optim.Adam(
     )
 
 
+class LRPolicy(object):
+    def __init__(self, initial, warmup_steps=10):
+        self.warmup_steps = warmup_steps
+        self.initial = initial
+
+    def __call__(self, step):
+        return self.initial + step/self.warmup_steps*(1 - self.initial)
+
+warmup_steps = config["warmup_steps"]
+
+scheduler1 = torch.optim.lr_scheduler.LambdaLR(optimizer,  LRPolicy(initial=1e-2, warmup_steps=warmup_steps))
+scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=int(config.epochs - warmup_steps))
+
+lr_scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, schedulers=[scheduler1, scheduler2], milestones=[warmup_steps])
+# lr_scheduler = config.lr_scheduler(optimizer=optimizer)
+
+
 lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, \
-    T_max=config['epochs'], eta_min=0, last_epoch=-1, verbose=False)
+    T_max=config['epochs'] - config["warmup_steps"], eta_min=0, last_epoch=-1, verbose=False)
 
 
 loss = torch.nn.L1Loss()
@@ -103,9 +120,9 @@ trainer = Trainer(
     lr_scheduler=lr_scheduler,
     seed=None,
     # log_step=2500,
-    device='cuda:0',
+    device='cuda:1',
     project="dance_gen",
-    # tags=["tiny"],
+    tags=["tiny"],
     # resume_id="elf7qts1"
     )
 
