@@ -63,7 +63,7 @@ config = {
     "weight_decay": 1e-5,
     "warmup_steps": 0,
     "lr_scheduler": "CosineAnnealingLR",
-    "save_dir": "/mnt/CRAI-NAS/all/jona/dance_models/tiny",
+    "save_dir": "/mnt/CRAI-NAS/all/jona/dance_models/tiny_warmup",
     "save_period": 10,
 }
 
