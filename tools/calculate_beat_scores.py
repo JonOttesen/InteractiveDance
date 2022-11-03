@@ -71,7 +71,7 @@ def recover_motion_to_keypoints(motion, smpl_model):
         transl=torch.from_numpy(smpl_trans).float(),
     )
 
-    plot(output, smpl_model)
+    # plot(output, smpl_model)  # Plot dance
 
     return keypoints3d
 
@@ -155,16 +155,16 @@ def main():
     from tqdm import tqdm
     from smplx import SMPL
 
-    audio_config.transformer.intermediate_size = 1024
-    motion_config.transformer.intermediate_size = 1024
-    multi_model_config.transformer.intermediate_size = 1024
-    multi_model_config.transformer.num_hidden_layers =  4
+    audio_config.transformer.intermediate_size = 1536
+    motion_config.transformer.intermediate_size = 1536
+    multi_model_config.transformer.intermediate_size = 1536
+    multi_model_config.transformer.num_hidden_layers =  6
 
     model = FACTModel(audio_config, motion_config, multi_model_config, pred_length=20)
     model = model.to("cuda:0")
     model.eval()
 
-    model_path = model_path = "/home/jon/Documents/dance/checkpoint-best.pth"
+    model_path = model_path = "/media/jon/Elements/Dance/small/2022-10-25/epoch_100/checkpoint-epoch100.pth"
     model.load_state_dict(torch.load(model_path, map_location='cpu')['state_dict'])
 
     # set smpl
@@ -185,8 +185,6 @@ def main():
         no_preprocessed=True,
         return_smpl=True,
         )
-    print(len(loader))
-    exit()
 
     beat_scores = []
     for i, (motion, audio) in enumerate(loader):
@@ -219,12 +217,8 @@ def main():
     print ("\nBeat score on real data: %.3f\n" % (sum(beat_scores) / n_samples))
 
     beat_scores = []
-    # for i, (motion, audio) in enumerate(loader):
-        # get real data motion beats
-        # smpl_poses, smpl_scaling, smpl_trans = motion
-        # smpl_trans /= smpl_scaling
-    loader.no_preprocessed = False
-    for i, (motion, audio, _) in enumerate(loader):
+    loader.return_smpl = False
+    for i, (motion, audio) in enumerate(loader):
         # get real data motion beats
         motion = motion[:120]
 

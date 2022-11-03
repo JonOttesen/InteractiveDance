@@ -57,13 +57,13 @@ config = {
     "iterative": True,
     "inputs_pr_iteration": 5000,
     "val_inputs_pr_iteration": 1000,
-    "batch_size": 32,
+    "batch_size": 16,
     "learning_rate": 1e-4,
     "optimizer": "Adam",
-    "weight_decay": 1e-5,
+    "weight_decay": 0,
     "warmup_steps": 10,
     "lr_scheduler": "CosineAnnealingLR",
-    "save_dir": "/mnt/CRAI-NAS/all/jona/dance_models/tiny_warmup",
+    "save_dir": "/mnt/CRAI-NAS/all/jona/dance_models/tiny",
     "save_period": 10,
 }
 
@@ -120,7 +120,7 @@ trainer = Trainer(
     lr_scheduler=lr_scheduler,
     seed=None,
     # log_step=2500,
-    device='cuda:1',
+    device='cuda:0',
     project="dance_gen",
     tags=["tiny"],
     # resume_id="elf7qts1"

@@ -152,7 +152,7 @@ class Dataloader:
         if self.no_preprocessed:
             if self.return_smpl:
                 return self.smpl[dance_name], audio
-            return dance, audio
+            return torch.from_numpy(dance).type(torch.float32), torch.from_numpy(audio).type(torch.float32)
 
         x = dance[frame:frame + self.seq_len]
         y = dance[frame + self.seq_len:frame + self.seq_len + self.target_len]
