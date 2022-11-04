@@ -19,7 +19,6 @@ train_loader = Dataloader(
     dataset, 
     "/mnt/CRAI-NAS/all/jona/dance_data/wav", 
     config={"audio_length": 240, "sequence_length": 120, "target_length": 20}, 
-    keypoint_dir="motions",
     split="train",
     method="smpl",
     )
@@ -28,7 +27,6 @@ val_loader = Dataloader(
     dataset, 
     "/mnt/CRAI-NAS/all/jona/dance_data/wav", 
     config={"audio_length": 240, "sequence_length": 120, "target_length": 20}, 
-    keypoint_dir="motions",
     split="val",
     method="smpl",
     )
