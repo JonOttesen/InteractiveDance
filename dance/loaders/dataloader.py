@@ -63,7 +63,8 @@ class Dataloader:
         split: str = "train",
         no_preprocessed: bool = False,
         method: str = "2d",
-        fps: int = 60
+        fps: int = 60,
+        return_smpl: bool = False,
         ) -> None:
         
         self.dataset = dataset
@@ -72,6 +73,7 @@ class Dataloader:
         self.no_preprocessed = no_preprocessed
         self.method = method
         self.fps = fps
+        self.return_smpl = return_smpl
 
         self.seq_len = self.config["sequence_length"]
         self.audio_len = self.config["audio_length"]

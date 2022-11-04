@@ -122,7 +122,8 @@ class FACTModel(nn.Module):
     outputs = []
     motion_input = inputs["motion_input"]
     steps = floor(steps / step_size)
-    for i in range(steps, step_size):
+
+    for i in range(0, steps, step_size):
         audio_input = inputs["audio_input"][:, i: i + audio_seq_length]
         if audio_input.shape[1] < audio_seq_length:
           break
