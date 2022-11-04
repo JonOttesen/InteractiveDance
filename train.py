@@ -18,7 +18,6 @@ dataset = AISTDataset("/mnt/CRAI-NAS/all/jona/dance_data")
 train_loader = Dataloader(
     dataset, 
     "/mnt/CRAI-NAS/all/jona/dance_data/wav", 
-    None, 
     config={"audio_length": 240, "sequence_length": 120, "target_length": 20}, 
     keypoint_dir="motions",
     split="train",
@@ -28,7 +27,6 @@ train_loader = Dataloader(
 val_loader = Dataloader(
     dataset, 
     "/mnt/CRAI-NAS/all/jona/dance_data/wav", 
-    None, 
     config={"audio_length": 240, "sequence_length": 120, "target_length": 20}, 
     keypoint_dir="motions",
     split="val",
