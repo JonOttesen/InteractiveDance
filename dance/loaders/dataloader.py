@@ -16,10 +16,9 @@ from .loader import AISTDataset
 import warnings
 warnings.filterwarnings("ignore")
 
-def audio_features(audio_dir, audio_name):
-    FPS = 60
+def audio_features(audio_dir, audio_name, fps):
     HOP_LENGTH = 512
-    SR = FPS * HOP_LENGTH
+    SR = fps * HOP_LENGTH
 
     def _get_tempo(audio_name):
         """Get tempo (BPM) for a music by parsing music name."""
@@ -60,25 +59,24 @@ class Dataloader:
         self, 
         dataset: AISTDataset,
         audio_dir: str,
-        transforms,
         config: dict,
-        keypoint_dir: Union[str, Path],
         split: str = "train",
         no_preprocessed: bool = False,
-        return_smpl: bool = False,
+        method: str = "2d",
+        fps: int = 60
         ) -> None:
         
         self.dataset = dataset
         self.audio_dir = audio_dir
         self.config = config
         self.no_preprocessed = no_preprocessed
-        self.return_smpl = return_smpl
+        self.method = method
+        self.fps = fps
 
         self.seq_len = self.config["sequence_length"]
         self.audio_len = self.config["audio_length"]
         self.target_len = self.config["target_length"]
 
-        self.keypoint_dir = keypoint_dir
         self.split = split
 
         self.indices = list()
@@ -101,8 +99,6 @@ class Dataloader:
         files = np.loadtxt(path, dtype=str)
         ignore_list = np.loadtxt(self.dataset.filter_file, dtype=str)
 
-        sec = 0
-
         for f in tqdm(files):
             # file_path = os.path.join(self.dataset.motion_dir, f + ".pkl")
             if f in ignore_list:
@@ -110,20 +106,28 @@ class Dataloader:
 
             piece = f
             music = piece.split("_")[-2]
-            smpl_poses, smpl_scaling, smpl_trans = self.dataset.load_motion(self.dataset.motion_dir, piece)
-            self.smpl[piece] = (deepcopy(smpl_poses), deepcopy(smpl_scaling), deepcopy(smpl_trans))
+            if self.method == "smpl":
+                smpl_poses, smpl_scaling, smpl_trans = self.dataset.load_motion(self.dataset.motion_dir, piece)
+                self.smpl[piece] = (deepcopy(smpl_poses), deepcopy(smpl_scaling), deepcopy(smpl_trans))
 
-            smpl_trans /= smpl_scaling
-            smpl_poses = R.from_rotvec(
-            smpl_poses.reshape(-1, 3)).as_matrix().reshape(smpl_poses.shape[0], -1)
+                smpl_trans /= smpl_scaling
+                smpl_poses = R.from_rotvec(
+                smpl_poses.reshape(-1, 3)).as_matrix().reshape(smpl_poses.shape[0], -1)
 
-            smpl_motion = np.concatenate([smpl_trans, smpl_poses], axis=-1)
+                smpl_motion = np.concatenate([smpl_trans, smpl_poses], axis=-1)
     
-            smpl_motion = np.pad(smpl_motion, [[0, 0], [6, 0]])
+                motion = np.pad(smpl_motion, [[0, 0], [6, 0]])
 
-            self.dances[piece] = deepcopy(smpl_motion)
+            elif self.method == "2d":
+                keypoints2d, _, _ = self.dataset.load_keypoint2d(self.dataset.keypoint2d_dir, piece)
+                motion = np.moveaxis(keypoints2d, 0, 1)
+
+                motion[:, :, :, 0] = (motion[:, :, :, 0] - 1920/2)/(1920/2)
+                motion[:, :, :, 1] = (motion[:, :, :, 1] - 1080/2)/(1080/2)
+
+            self.dances[piece] = deepcopy(motion)
             if music not in self.music.keys():
-                audio_feature = audio_features(self.audio_dir, music)
+                audio_feature = audio_features(self.audio_dir, music, self.fps)
                 self.music[music] = audio_feature
 
         for music_name, audio in self.music.items():
@@ -143,7 +147,7 @@ class Dataloader:
     def __len__(self):
         return len(self.indices)
 
-    def __getitem__(self, index) -> torch.Tensor:
+    def __getitem__(self, index: int) -> torch.Tensor:
         frame, music_name, dance_name = self.indices[index]
 
         audio = self.music[music_name]
@@ -175,7 +179,6 @@ if __name__ == '__main__':
         "/home/jon/Documents/dance/data/wav", 
         None, 
         config={"audio_length": 240, "sequence_length": 120, "target_length": 20}, 
-        keypoint_dir="motions",
         )
     for x, m, y in loader:
         print(x.shape, m.shape, y.shape)

@@ -18,6 +18,8 @@ from .multi_modal_model_util import *
 
 from .config import audio_config, motion_config, multi_model_config
 
+from math import floor
+
 import torch
 import torch.nn as nn
 
@@ -99,7 +101,7 @@ class FACTModel(nn.Module):
 
     return output[:, :self.pred_length]
 
-  def infer_auto_regressive(self, inputs, steps=1200):
+  def infer_auto_regressive(self, inputs, steps: int = 1200, step_size: int = 1):
     """Predict sequences from inputs in an auto-regressive manner. 
 
     This function should be used only during inference. During each forward step, 
@@ -119,16 +121,17 @@ class FACTModel(nn.Module):
     audio_seq_length = self.audio_config.sequence_length
     outputs = []
     motion_input = inputs["motion_input"]
-    for i in range(steps):
+    steps = floor(steps / step_size)
+    for i in range(steps, step_size):
         audio_input = inputs["audio_input"][:, i: i + audio_seq_length]
         if audio_input.shape[1] < audio_seq_length:
           break
         output = self.forward({"motion_input": motion_input, "audio_input": audio_input})
-        output = output[:, 0:1, :]  # only keep the first frame
+        output = output[:, 0:step_size, :]  # only keep the first step_size frames
         
         outputs.append(output)
         # update motion input
-        motion_input = torch.cat([motion_input[:, 1:, :], output], dim=1)
+        motion_input = torch.cat([motion_input[:, step_size:, :], output], dim=1)
     return torch.cat(outputs, dim=1)
 
 if __name__ == '__main__':

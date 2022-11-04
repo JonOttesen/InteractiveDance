@@ -21,7 +21,8 @@ train_loader = Dataloader(
     None, 
     config={"audio_length": 240, "sequence_length": 120, "target_length": 20}, 
     keypoint_dir="motions",
-    split="train"
+    split="train",
+    method="smpl",
     )
 
 val_loader = Dataloader(
@@ -30,7 +31,8 @@ val_loader = Dataloader(
     None, 
     config={"audio_length": 240, "sequence_length": 120, "target_length": 20}, 
     keypoint_dir="motions",
-    split="val"
+    split="val",
+    method="smpl",
     )
 
 metrics = {
@@ -38,10 +40,10 @@ metrics = {
     'L1': torch.nn.L1Loss(),
     }
 
-audio_config.transformer.intermediate_size = 1536
-motion_config.transformer.intermediate_size = 1536
-multi_model_config.transformer.intermediate_size = 1536
-multi_model_config.transformer.num_hidden_layers =  6
+# audio_config.transformer.intermediate_size = 1536
+# motion_config.transformer.intermediate_size = 1536
+# multi_model_config.transformer.intermediate_size = 1536
+# multi_model_config.transformer.num_hidden_layers =  6
 
 model = FACTModel(audio_config, motion_config, multi_model_config, pred_length=20)
 
@@ -120,9 +122,9 @@ trainer = Trainer(
     lr_scheduler=lr_scheduler,
     seed=None,
     # log_step=2500,
-    device='cuda:1',
+    device='cuda:0',
     project="dance_gen",
-    tags=["small"],
+    tags=["original"],
     # resume_id="elf7qts1"
     )
 
