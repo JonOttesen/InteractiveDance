@@ -71,7 +71,7 @@ def recover_motion_to_keypoints(motion, smpl_model):
         transl=torch.from_numpy(smpl_trans).float(),
     )
 
-    # plot(output, smpl_model)  # Plot dance
+    plot(output, smpl_model)  # Plot dance
 
     return keypoints3d
 
@@ -110,7 +110,7 @@ def plot(output, model):
 
 
     frames = vertices_video.shape[0]
-    for i in range(frames):
+    for i in range(0, frames, 2):
         vertices = vertices_video[i]
         joints = joints_video[i]
         
@@ -155,6 +155,13 @@ def main():
     from tqdm import tqdm
     from smplx import SMPL
 
+    # Tiny
+    # audio_config.transformer.intermediate_size = 1024
+    # motion_config.transformer.intermediate_size = 1024
+    # multi_model_config.transformer.intermediate_size = 1024
+    # multi_model_config.transformer.num_hidden_layers =  4
+
+    # Small
     audio_config.transformer.intermediate_size = 1536
     motion_config.transformer.intermediate_size = 1536
     multi_model_config.transformer.intermediate_size = 1536
@@ -164,7 +171,7 @@ def main():
     model = model.to("cuda:0")
     model.eval()
 
-    model_path = model_path = "/media/jon/Elements/Dance/small/2022-10-25/epoch_100/checkpoint-epoch100.pth"
+    model_path = model_path = "/home/jon/Documents/dance/DanceModels/Small/checkpoint-epoch200.pth"
     model.load_state_dict(torch.load(model_path, map_location='cpu')['state_dict'])
 
     # set smpl
@@ -177,15 +184,14 @@ def main():
 
     loader = Dataloader(
         dataset, 
-        "/home/jon/Documents/dance/data/wav", 
-        None, 
+        "/home/jon/Documents/dance/data/wav",  
         config={"audio_length": 240, "sequence_length": 120, "target_length": 20}, 
-        keypoint_dir="motions",
         split="test",
         no_preprocessed=True,
         return_smpl=True,
+        method="smpl",
         )
-
+    """
     beat_scores = []
     for i, (motion, audio) in enumerate(loader):
         # get real data motion beats
@@ -215,18 +221,20 @@ def main():
         beat_scores.append(beat_score)
     n_samples = i + 1
     print ("\nBeat score on real data: %.3f\n" % (sum(beat_scores) / n_samples))
-
+    """
     beat_scores = []
     loader.return_smpl = False
     for i, (motion, audio) in enumerate(loader):
+        if i <= 2:
+            continue
         # get real data motion beats
         motion = motion[:120]
 
         inp = {"motion_input": motion.unsqueeze(0).to("cuda:0"), "audio_input": audio.unsqueeze(0).to("cuda:0")}
         with torch.no_grad():
             start = time.time()
-            pred = model.infer_auto_regressive(inp, steps=1200).cpu().numpy()[0]
-            print("Total time: ", time.time() - start)
+            pred = model.infer_auto_regressive(inp, steps=1200, step_size=1).cpu().numpy()[0]
+            # print("Total time: ", time.time() - start)
 
         result_motion = np.expand_dims(np.concatenate([
             motion,
@@ -240,7 +248,9 @@ def main():
         audio_beats = audio[:, -1] # last dim is the music beats
         beat_score = alignment_score(audio_beats[120:], motion_beats[120:], sigma=3)
         beat_scores.append(beat_score)
-    print ("\nBeat score on generated data: %.3f\n" % (sum(beat_scores) / n_samples))
+        exit()
+
+    print ("\nBeat score on generated data: %.3f\n" % (sum(beat_scores) / len(beat_scores)))
 
 if __name__=="__main__":
     main()
