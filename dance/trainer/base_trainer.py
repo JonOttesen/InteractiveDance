@@ -144,16 +144,16 @@ class BaseTrainer:
 
             self.logger.info('Epoch/iteration {} with validation completed in {}'.format(epoch, epoch_end_time))
 
-            if hasattr(self.lr_scheduler, 'get_last_lr'):
-                current_lr = self.lr_scheduler.get_last_lr()[0]
-            elif hasattr(self.lr_scheduler, 'get_lr'):
-                current_lr = self.lr_scheduler.get_lr()[0]
+            # if hasattr(self.lr_scheduler, 'get_last_lr'):
+                # current_lr = self.lr_scheduler.get_last_lr()[0]
+            # elif hasattr(self.lr_scheduler, 'get_lr'):
+                # current_lr = self.lr_scheduler.get_lr()[0]
 
             loss_val_dict = {
                 **loss_dict, 
                 **val_dict, 
                 "epoch": epoch,
-                "learning_rate": current_lr,
+                # "learning_rate": current_lr,
                 }
             wandb.log(loss_val_dict, commit=True)
             val_loss = val_dict["val_loss"]
