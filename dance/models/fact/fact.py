@@ -121,7 +121,6 @@ class FACTModel(nn.Module):
     audio_seq_length = self.audio_config.sequence_length
     outputs = []
     motion_input = inputs["motion_input"]
-    steps = floor(steps / step_size)
 
     for i in range(0, steps, step_size):
         audio_input = inputs["audio_input"][:, i: i + audio_seq_length]
