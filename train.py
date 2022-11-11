@@ -55,11 +55,11 @@ print('The number of params in Million: ', params/1e6)
 
 config = {
     "name": "dance_gen",
-    "epochs": 250,
+    "epochs": 200,
     "num_hidden_layers": multi_model_config.transformer.num_hidden_layers,
     "intermediate_size": multi_model_config.transformer.intermediate_size,
     "iterative": True,
-    "inputs_pr_iteration": 5000,
+    "inputs_pr_iteration": 10000,
     "val_inputs_pr_iteration": 1000,
     "batch_size": 16,
     "learning_rate": 1e-4,
