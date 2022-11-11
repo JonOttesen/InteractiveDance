@@ -29,6 +29,7 @@ val_loader = Dataloader(
     config={"audio_length": 240, "sequence_length": 120, "target_length": 20}, 
     split="val",
     method="smpl",
+    no_preprocessed=True,
     )
 
 metrics = {
