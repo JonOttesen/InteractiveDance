@@ -13,22 +13,22 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-dataset = AISTDataset("/mnt/CRAI-NAS/all/jona/dance_data")
+dataset = AISTDataset("/home/jon/Documents/dance/data")
 
 train_loader = Dataloader(
     dataset, 
-    "/mnt/CRAI-NAS/all/jona/dance_data/wav", 
+    "/home/jon/Documents/dance/data/wav", 
     config={"audio_length": 240, "sequence_length": 120, "target_length": 20}, 
     split="train",
-    method="smpl",
+    method="2d",
     )
 
 val_loader = Dataloader(
     dataset, 
-    "/mnt/CRAI-NAS/all/jona/dance_data/wav", 
+    "/home/jon/Documents/dance/data/wav", 
     config={"audio_length": 240, "sequence_length": 120, "target_length": 20}, 
     split="val",
-    method="smpl",
+    method="2d",
     )
 
 metrics = {
@@ -36,17 +36,14 @@ metrics = {
     'L1': torch.nn.L1Loss(),
     }
 
-audio_config.transformer.intermediate_size = 1024
-motion_config.transformer.intermediate_size = 1024
-multi_model_config.transformer.intermediate_size = 1024
-multi_model_config.transformer.num_hidden_layers =  4
+audio_config.transformer.intermediate_size = 1536
+motion_config.transformer.intermediate_size = 1536
+multi_model_config.transformer.intermediate_size = 1536
+multi_model_config.transformer.num_hidden_layers =  6
 
-# audio_config.transformer.intermediate_size = 1536
-# motion_config.transformer.intermediate_size = 1536
-# multi_model_config.transformer.intermediate_size = 1536
-# multi_model_config.transformer.num_hidden_layers =  6
+motion_config.feature_dim = 34
 
-model = FACTModel(audio_config, motion_config, multi_model_config, pred_length=20)
+model = FACTModel(audio_config, motion_config, multi_model_config, out_dim=34, pred_length=20)
 
 model_parameters = filter(lambda p: p.requires_grad, model.parameters())
 params = sum([np.prod(p.size()) for p in model_parameters])
@@ -58,15 +55,15 @@ config = {
     "num_hidden_layers": multi_model_config.transformer.num_hidden_layers,
     "intermediate_size": multi_model_config.transformer.intermediate_size,
     "iterative": True,
-    "inputs_pr_iteration": 5000,
+    "inputs_pr_iteration": 10000,
     "val_inputs_pr_iteration": 1000,
-    "batch_size": 16,
+    "batch_size": 4,
     "learning_rate": 1e-4,
     "optimizer": "Adam",
     "weight_decay": 0,
     "warmup_steps": 10,
     "lr_scheduler": "CosineAnnealingLR",
-    "save_dir": "/mnt/CRAI-NAS/all/jona/dance_models/tiny",
+    "save_dir": "/home/jon/Documents/test",
     "save_period": 20,
 }
 
@@ -77,9 +74,9 @@ train_loader = torch.utils.data.DataLoader(dataset=train_loader,
 
 
 valid_loader = torch.utils.data.DataLoader(dataset=val_loader,
-                                           num_workers=1,
-                                           batch_size=1,
-                                           shuffle=False)
+                                           num_workers=8,
+                                           batch_size=config["batch_size"],
+                                           shuffle=True)
 
 optimizer = torch.optim.Adam(
     model.parameters(), 
@@ -121,12 +118,11 @@ trainer = Trainer(
     valid_data_loader=valid_loader,
     optimizer=optimizer,
     lr_scheduler=lr_scheduler,
-    smpl_model="/mnt/CRAI-NAS/all/jona/smpl/models/",
     seed=None,
     # log_step=2500,
     device='cuda:0',
-    project="dance_genV2",
-    tags=["tiny"],
+    project="dance_gen_2d",
+    tags=["original_crai"],
     # resume_id="elf7qts1"
     )
 

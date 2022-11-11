@@ -6,11 +6,15 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 
+from smplx import SMPL
+
 # from torchvision.utils import make_grid
 # from base import BaseTrainer
 # from utils import inf_loop, MetricTracker
 
 from .base_trainer import BaseTrainer
+
+from .scores import Scores
 
 
 class Trainer(BaseTrainer):
@@ -25,6 +29,7 @@ class Trainer(BaseTrainer):
                  lr_scheduler,
                  config: dict,
                  project: str,
+                 smpl_model: str,
                  data_loader: torch.utils.data.dataloader,
                  valid_data_loader: torch.utils.data.dataloader = None,
                  seed: int = None,
@@ -56,6 +61,9 @@ class Trainer(BaseTrainer):
         self.len_epoch = len(data_loader) if not self.iterative else self.inputs_pr_iteration
         self.batch_size = data_loader.batch_size
         self.log_step = int(self.len_epoch/(4)) if not isinstance(log_step, int) else log_step
+
+        smpl = SMPL(model_path=smpl_model, gender='MALE', batch_size=1).to(self.device)
+        self.scores = Scores(smpl)
 
     def _train_epoch(self, epoch):
         """
@@ -114,25 +122,52 @@ class Trainer(BaseTrainer):
         metrics = defaultdict(list)
 
         with torch.no_grad():
-            for batch_idx, (data, music, target) in enumerate(self.valid_data_loader):
-                data, music, target = data.to(self.device), music.to(self.device), target.to(self.device)
+            for batch_idx, (data, music) in enumerate(self.valid_data_loader):
+                data, music= data.to(self.device), music.to(self.device)
+
                 inp = {
-                    "motion_input": data,
+                    "motion_input": data[:, :120],
                     "audio_input": music,
                     }
 
-                output = self.model(inp)
+                output = self.model.infer_auto_regressive(inp, steps=1200, step_size=1).cpu().numpy()[0]
 
-                metrics['val_loss'].append(self.loss_function(output, target).item())
+                result_motion = np.expand_dims(np.concatenate([
+                    data[:, :120].cpu().numpy()[0],
+                    output
+                    ], axis=0), axis=0)  # [1, 120 + 1200, 225]
 
-                for key, metric in self.metric_ftns.items():
-                    metrics[key].append(metric(output, target).item())
+                pred_keypoints = self.scores.recover_motion_to_keypoints(result_motion, self.device)
+                real_keypoints = self.scores.recover_motion_to_keypoints(data.cpu().numpy(), self.device)
+
+                metrics["beat_align"].append(self.scores.beat_align(pred_keypoints, music.cpu().numpy()[0]))
+
+                # fid_k, dist_k = self.scores.kinetic_fid(pred_keypoints, real_keypoints)
+                # fid_g, dist_g = self.scores.manual_fid(pred_keypoints, real_keypoints)
+
+                self.scores.accumulate_fid(pred_keypoints, real_keypoints)
+
+                # metrics['fid_k'].append(fid_k)
+                # metrics['dist_k'].append(dist_k)
+                # metrics['fid_g'].append(fid_g)
+                # metrics['dist_g'].append(dist_g)
+                
+                # metrics['val_loss'].append(fid_k + fid_g)
 
                 if batch_idx >= self.val_inputs_pr_iteration and self.iterative:
                     break
+
         metric_dict = dict()
         for key, item in metrics.items():
             metric_dict[key] = np.mean(metrics[key])
+        
+        FID_k, FID_g, Dist_k, Dist_g = self.scores.fid()
+        metric_dict["val_loss"] = FID_g + FID_k
+
+        metric_dict['fid_k'] = FID_k
+        metric_dict['dist_k'] = Dist_k
+        metric_dict['fid_g'] = FID_g
+        metric_dict['dist_g'] = Dist_g
 
         return metric_dict
 

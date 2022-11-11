@@ -12,6 +12,7 @@ from dance.loaders.dataloader import Dataloader
 
 from dance.models.fact.fact import FACTModel
 from dance.models.fact.config import audio_config, fact_model, motion_config, multi_model_config
+from dance.trainer.scores import Scores
 
 
 def eye(n, batch_shape):
@@ -71,7 +72,7 @@ def recover_motion_to_keypoints(motion, smpl_model):
         transl=torch.from_numpy(smpl_trans).float(),
     )
 
-    plot(output, smpl_model)  # Plot dance
+    # plot(output, smpl_model)  # Plot dance
 
     return keypoints3d
 
@@ -132,7 +133,7 @@ def plot(output, model):
         ax.scatter(joints[:, 0], joints[:, 1], joints[:, 2], color='r')
 
         ax.scatter(joints[:, 0], joints[:, 1], joints[:, 2], alpha=0.1)
-        plt.savefig("dances/{:03d}.png".format(i), dpi=150)
+        plt.savefig("new_tmp_dance/{:04d}.png".format(i), dpi=150, transparent=True)
         plt.close()
 
 def alignment_score(music_beats, motion_beats, sigma=3):
@@ -156,26 +157,28 @@ def main():
     from smplx import SMPL
 
     # Tiny
-    # audio_config.transformer.intermediate_size = 1024
-    # motion_config.transformer.intermediate_size = 1024
-    # multi_model_config.transformer.intermediate_size = 1024
-    # multi_model_config.transformer.num_hidden_layers =  4
+    audio_config.transformer.intermediate_size = 1024
+    motion_config.transformer.intermediate_size = 1024
+    multi_model_config.transformer.intermediate_size = 1024
+    multi_model_config.transformer.num_hidden_layers =  4
 
     # Small
-    audio_config.transformer.intermediate_size = 1536
-    motion_config.transformer.intermediate_size = 1536
-    multi_model_config.transformer.intermediate_size = 1536
-    multi_model_config.transformer.num_hidden_layers =  6
+    # audio_config.transformer.intermediate_size = 1536
+    # motion_config.transformer.intermediate_size = 1536
+    # multi_model_config.transformer.intermediate_size = 1536
+    # multi_model_config.transformer.num_hidden_layers =  6
 
     model = FACTModel(audio_config, motion_config, multi_model_config, pred_length=20)
     model = model.to("cuda:0")
     model.eval()
 
-    model_path = model_path = "/home/jon/Documents/dance/DanceModels/Small/checkpoint-epoch200.pth"
+    model_path = model_path = "/home/jon/Documents/dance/DanceModels/Tiny/checkpoint-epoch200.pth"
     model.load_state_dict(torch.load(model_path, map_location='cpu')['state_dict'])
 
     # set smpl
     smpl = SMPL(model_path="/home/jon/Documents/dance/smpl/models/", gender='MALE', batch_size=1)
+
+    scoring = Scores(smpl)
 
     path = "/home/jon/Documents/dance/data/"
 
@@ -225,9 +228,10 @@ def main():
     beat_scores = []
     loader.return_smpl = False
     for i, (motion, audio) in enumerate(loader):
-        if i <= 2:
+        if i < 15:
             continue
         # get real data motion beats
+        gt = np.expand_dims(motion, 0)
         motion = motion[:120]
 
         inp = {"motion_input": motion.unsqueeze(0).to("cuda:0"), "audio_input": audio.unsqueeze(0).to("cuda:0")}
@@ -241,14 +245,23 @@ def main():
             pred
             ], axis=0), axis=0)  # [1, 120 + 1200, 225]
 
-        keypoints3d = recover_motion_to_keypoints(result_motion, smpl)
+        kp = scoring.recover_motion_to_keypoints(result_motion, "cpu")
+        bs = scoring.beat_align(kp, audio)
 
+        kp_g = scoring.recover_motion_to_keypoints(gt, "cpu")
+        a = scoring.manual_fid(kp, kp_g)
+        b = scoring.kinetic_fid(kp, kp_g)
+        # print(a)
+        # print(b)
+
+        keypoints3d = recover_motion_to_keypoints(result_motion, smpl)
         motion_beats = motion_peak_onehot(keypoints3d)
         
         audio_beats = audio[:, -1] # last dim is the music beats
         beat_score = alignment_score(audio_beats[120:], motion_beats[120:], sigma=3)
         beat_scores.append(beat_score)
-        exit()
+        print(bs, beat_score)
+        print("--------------------------------")
 
     print ("\nBeat score on generated data: %.3f\n" % (sum(beat_scores) / len(beat_scores)))
 

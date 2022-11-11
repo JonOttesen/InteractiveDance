@@ -85,6 +85,8 @@ class Dataloader:
         self.dances = dict()
         self.music = dict()
         self.smpl = dict()
+
+        self.individual_length = 0
         
         self._store_in_memory(split)
 
@@ -105,7 +107,7 @@ class Dataloader:
             # file_path = os.path.join(self.dataset.motion_dir, f + ".pkl")
             if f in ignore_list:
                 continue
-
+            self.individual_length += 1
             piece = f
             music = piece.split("_")[-2]
             if self.method == "smpl":
@@ -126,12 +128,14 @@ class Dataloader:
 
                 motion[:, :, :, 0] = (motion[:, :, :, 0] - 1920/2)/(1920/2)
                 motion[:, :, :, 1] = (motion[:, :, :, 1] - 1080/2)/(1080/2)
+                shape = motion.shape
+                motion = motion[:, :, :, :2].reshape(shape[0], shape[1], shape[2]*2)
 
             self.dances[piece] = deepcopy(motion)
             if music not in self.music.keys():
                 audio_feature = audio_features(self.audio_dir, music, self.fps)
                 self.music[music] = audio_feature
-
+                
         for music_name, audio in self.music.items():
             audio_frames = audio.shape[0] - self.audio_len
 
@@ -142,16 +146,29 @@ class Dataloader:
                 motion_frames = dance.shape[0] - self.seq_len - self.target_len
                 frames = min(audio_frames, motion_frames)
                 for i in range(0, frames):
-                    self.indices.append((i, music_name, dance_name))
-                    if split == "test" and self.no_preprocessed:
-                        break
+
+                    if self.method == "2d":
+                        for c in range(dance.shape[1]):
+                            if np.sum(np.isnan(dance[i: i + self.seq_len, c])) > 0:
+                                continue
+                            self.indices.append((i, c, music_name, dance_name))
+                            if split == "test" or split == "val" and self.no_preprocessed:
+                                break
+                    else:
+                        self.indices.append((i, music_name, dance_name))
+                        if split == "test" or split == "val" and self.no_preprocessed:
+                            break
     
     def __len__(self):
+        if self.no_preprocessed:
+            return int(self.individual_length)
         return len(self.indices)
 
     def __getitem__(self, index: int) -> torch.Tensor:
-        frame, music_name, dance_name = self.indices[index]
-
+        if self.method == "2d":
+            frame, camera, music_name, dance_name = self.indices[index]    
+        else:
+            frame, music_name, dance_name = self.indices[index]
         audio = self.music[music_name]
         dance = self.dances[dance_name]
 
@@ -160,9 +177,14 @@ class Dataloader:
                 return self.smpl[dance_name], audio
             return torch.from_numpy(dance).type(torch.float32), torch.from_numpy(audio).type(torch.float32)
 
-        x = dance[frame:frame + self.seq_len]
-        y = dance[frame + self.seq_len:frame + self.seq_len + self.target_len]
-        m = audio[frame:frame + self.audio_len]
+        if self.method == "2d":
+            x = dance[frame:frame + self.seq_len, camera]
+            y = dance[frame + self.seq_len:frame + self.seq_len + self.target_len, camera]
+            m = audio[frame:frame + self.audio_len]
+        else:
+            x = dance[frame:frame + self.seq_len]
+            y = dance[frame + self.seq_len:frame + self.seq_len + self.target_len]
+            m = audio[frame:frame + self.audio_len]
 
         x, m, y = torch.from_numpy(x).type(torch.float32), torch.from_numpy(m).type(torch.float32), torch.from_numpy(y).type(torch.float32)
 

@@ -126,6 +126,7 @@ class FACTModel(nn.Module):
         audio_input = inputs["audio_input"][:, i: i + audio_seq_length]
         if audio_input.shape[1] < audio_seq_length:
           break
+
         output = self.forward({"motion_input": motion_input, "audio_input": audio_input})
         output = output[:, 0:step_size, :]  # only keep the first step_size frames
         
