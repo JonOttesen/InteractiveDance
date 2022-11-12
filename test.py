@@ -16,6 +16,12 @@ from dance.models.fact.config import audio_config, fact_model, motion_config, mu
 
 def main():
 
+    x = np.load("example.npy")
+    shape = x.shape
+    x = x.reshape(shape[0], shape[1]*2)
+
+    print(x.shape)
+    exit()
     audio_config.transformer.intermediate_size = 1024
     motion_config.transformer.intermediate_size = 1024
     multi_model_config.transformer.intermediate_size = 1024

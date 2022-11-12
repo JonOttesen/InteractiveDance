@@ -54,6 +54,7 @@ def audio_features(audio_dir, audio_name, fps):
 
 
 class Dataloader:
+    NATIVE_FPS = 60
 
     def __init__(
         self, 
@@ -75,9 +76,9 @@ class Dataloader:
         self.fps = fps
         self.return_smpl = return_smpl
 
-        self.seq_len = self.config["sequence_length"]
-        self.audio_len = self.config["audio_length"]
-        self.target_len = self.config["target_length"]
+        self.seq_len = int(self.config["sequence_length"]*self.NATIVE_FPS/self.fps)
+        self.audio_len = int(self.config["audio_length"]*self.NATIVE_FPS/self.fps)
+        self.target_len = int(self.config["target_length"]*self.NATIVE_FPS/self.fps)
 
         self.split = split
 
@@ -177,14 +178,15 @@ class Dataloader:
                 return self.smpl[dance_name], audio
             return torch.from_numpy(dance).type(torch.float32), torch.from_numpy(audio).type(torch.float32)
 
+        step = int(self.NATIVE_FPS/self.fps)
         if self.method == "2d":
-            x = dance[frame:frame + self.seq_len, camera]
-            y = dance[frame + self.seq_len:frame + self.seq_len + self.target_len, camera]
-            m = audio[frame:frame + self.audio_len]
+            x = dance[frame:frame + self.seq_len:step, camera]
+            y = dance[frame + self.seq_len:frame + self.seq_len + self.target_len:step, camera]
+            m = audio[frame:frame + self.audio_len:step]
         else:
-            x = dance[frame:frame + self.seq_len]
-            y = dance[frame + self.seq_len:frame + self.seq_len + self.target_len]
-            m = audio[frame:frame + self.audio_len]
+            x = dance[frame:frame + self.seq_len:step]
+            y = dance[frame + self.seq_len:frame + self.seq_len + self.target_len:step]
+            m = audio[frame:frame + self.audio_len:step]
 
         x, m, y = torch.from_numpy(x).type(torch.float32), torch.from_numpy(m).type(torch.float32), torch.from_numpy(y).type(torch.float32)
 

@@ -13,35 +13,37 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-dataset = AISTDataset("/home/jon/Documents/dance/data")
+dataset = AISTDataset("/itf-fi-ml/home/jonakri/dance/data")
 
 train_loader = Dataloader(
     dataset, 
-    "/home/jon/Documents/dance/data/wav", 
-    config={"audio_length": 240, "sequence_length": 120, "target_length": 20}, 
+    "/itf-fi-ml/home/jonakri/dance/data/wav", 
+    config={"audio_length": 180, "sequence_length": 90, "target_length": 20}, 
     split="train",
     method="2d",
+    fps=30,
     )
 
-val_loader = Dataloader(
-    dataset, 
-    "/home/jon/Documents/dance/data/wav", 
-    config={"audio_length": 240, "sequence_length": 120, "target_length": 20}, 
-    split="val",
-    method="2d",
-    )
+# val_loader = Dataloader(
+    # dataset, 
+    # "/home/jon/Documents/dance/data/wav", 
+    # config={"audio_length": 240, "sequence_length": 120, "target_length": 20}, 
+    # split="val",
+    # method="2d",
+    # )
 
-metrics = {
-    'MSE': torch.nn.MSELoss(),
-    'L1': torch.nn.L1Loss(),
-    }
 
-audio_config.transformer.intermediate_size = 1536
-motion_config.transformer.intermediate_size = 1536
-multi_model_config.transformer.intermediate_size = 1536
-multi_model_config.transformer.num_hidden_layers =  6
+
+audio_config.transformer.intermediate_size = 1024
+motion_config.transformer.intermediate_size = 1024
+multi_model_config.transformer.intermediate_size = 1024
+multi_model_config.transformer.num_hidden_layers =  4
 
 motion_config.feature_dim = 34
+
+audio_config.sequence_length = 180
+motion_config.sequence_length = 90
+multi_model_config.sequence_length = 180
 
 model = FACTModel(audio_config, motion_config, multi_model_config, out_dim=34, pred_length=20)
 
@@ -51,20 +53,20 @@ print('The number of params in Million: ', params/1e6)
 
 config = {
     "name": "dance_gen",
-    "epochs": 250,
+    "epochs": 200,
     "num_hidden_layers": multi_model_config.transformer.num_hidden_layers,
     "intermediate_size": multi_model_config.transformer.intermediate_size,
     "iterative": True,
     "inputs_pr_iteration": 10000,
     "val_inputs_pr_iteration": 1000,
-    "batch_size": 4,
+    "batch_size": 16,
     "learning_rate": 1e-4,
     "optimizer": "Adam",
     "weight_decay": 0,
     "warmup_steps": 10,
     "lr_scheduler": "CosineAnnealingLR",
-    "save_dir": "/home/jon/Documents/test",
-    "save_period": 20,
+    "save_dir": "/itf-fi-ml/home/jonakri/dance/2D/30fps",
+    "save_period": 10,
 }
 
 train_loader = torch.utils.data.DataLoader(dataset=train_loader,
@@ -73,10 +75,10 @@ train_loader = torch.utils.data.DataLoader(dataset=train_loader,
                                            shuffle=True)
 
 
-valid_loader = torch.utils.data.DataLoader(dataset=val_loader,
-                                           num_workers=8,
-                                           batch_size=config["batch_size"],
-                                           shuffle=True)
+# valid_loader = torch.utils.data.DataLoader(dataset=val_loader,
+                                        #    num_workers=8,
+                                        #    batch_size=config["batch_size"],
+                                        #    shuffle=True)
 
 optimizer = torch.optim.Adam(
     model.parameters(), 
@@ -112,17 +114,17 @@ loss = torch.nn.L1Loss()
 trainer = Trainer(
     model=model,
     loss_function=loss,
-    metric_ftns=metrics,
+    metric_ftns=None,
     config=config,
     data_loader=train_loader,
-    valid_data_loader=valid_loader,
+    valid_data_loader=None,
     optimizer=optimizer,
     lr_scheduler=lr_scheduler,
     seed=None,
     # log_step=2500,
     device='cuda:0',
     project="dance_gen_2d",
-    tags=["original_crai"],
+    tags=["tiny_30fps"],
     # resume_id="elf7qts1"
     )
 

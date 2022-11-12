@@ -37,6 +37,7 @@ class Trainer(BaseTrainer):
                  tags: Optional[List[str]] = None,
                  log_step: int = None,
                  resume_id: str = None,
+                 dont_val: int = 0,
                  ):
 
         super().__init__(model=model,
@@ -54,6 +55,7 @@ class Trainer(BaseTrainer):
 
         self.data_loader = data_loader
         self.valid_data_loader = valid_data_loader
+        self.dont_val = dont_val
 
         self.inputs_pr_iteration = int(config['inputs_pr_iteration'])
         self.val_inputs_pr_iteration = int(config['val_inputs_pr_iteration'])
@@ -116,7 +118,10 @@ class Trainer(BaseTrainer):
         :return: A log that contains information about validation
         """
         if self.valid_data_loader is None:
-            return None
+            return dict()
+        
+        if epoch < self.dont_val:
+            return dict() 
 
         self.model.eval()
         metrics = defaultdict(list)
