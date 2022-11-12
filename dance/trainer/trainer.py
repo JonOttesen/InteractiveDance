@@ -26,7 +26,6 @@ class Trainer(BaseTrainer):
     def __init__(self,
                  model: torch.nn.Module,
                  loss_function: Callable,
-                 metric_ftns: Dict[str, Callable],
                  optimizer,
                  lr_scheduler,
                  config: dict,
@@ -44,7 +43,6 @@ class Trainer(BaseTrainer):
 
         super().__init__(model=model,
                          loss_function=loss_function,
-                         metric_ftns=metric_ftns,
                          optimizer=optimizer,
                          lr_scheduler=lr_scheduler,
                          config=config,
@@ -65,7 +63,7 @@ class Trainer(BaseTrainer):
         self.len_epoch = len(data_loader) if not self.iterative else self.inputs_pr_iteration
         self.batch_size = data_loader.batch_size
         self.log_step = int(self.len_epoch/(4)) if not isinstance(log_step, int) else log_step
-        
+
         if self.valid_data_loader is not None:
             smpl = SMPL(model_path=smpl_model, gender='MALE', batch_size=1).to(self.device)
             self.scores = Scores(smpl)

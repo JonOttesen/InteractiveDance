@@ -24,7 +24,6 @@ class BaseTrainer:
     def __init__(self,
                  model: torch.nn.Module,
                  loss_function: callable,
-                 metric_ftns: Dict[str, callable],
                  optimizer,
                  lr_scheduler,
                  config: dict,
@@ -38,7 +37,6 @@ class BaseTrainer:
         Args:
             model (torch.nn.Module): The model to be trained
             loss_function (MultiLoss): The loss function or loss function class
-            metric_ftns (MultiMetric, Dict[str, callable]): Dict or Multimetric for the metrics to be evaluated during validation
             optimizer (torch.optim): torch.optim, i.e., the optimizer class
             config (dict): dict of configs
             lr_scheduler (torch.optim.lr_scheduler): pytorch lr_scheduler for manipulating the learning rate
@@ -87,14 +85,6 @@ class BaseTrainer:
             self.model = torch.nn.DataParallel(model, device_ids=device_ids)
 
         self.loss_function = loss_function.to(self.device)
-
-        if isinstance(metric_ftns, dict):  # dicts can't be sent to the gpu
-            self.metrics_is_dict = True
-            self.metric_ftns = metric_ftns
-        else:  # MetricTracker class can be sent to the gpu
-            self.metrics_is_dict = False
-            self.metric_ftns = metric_ftns.to(self.device)
-
 
         self.epochs = wandb.config['epochs']
         self.save_period = wandb.config['save_period']
@@ -156,14 +146,14 @@ class BaseTrainer:
                 # "learning_rate": current_lr,
                 }
             wandb.log(loss_val_dict, commit=True)
-            val_loss = val_dict["val_loss"]
-            print(val_loss)
+            if bool(val_dict):
+                val_loss = val_dict["val_loss"]
 
-            if epoch % self.save_period == 0:
-                self.save_checkpoint(epoch, best=False)
-            if val_loss < self.min_validation_loss:
-                self.min_validation_loss = val_loss
-                self.save_checkpoint(epoch, best=True)
+                if epoch % self.save_period == 0:
+                    self.save_checkpoint(epoch, best=False)
+                if val_loss < self.min_validation_loss:
+                    self.min_validation_loss = val_loss
+                    self.save_checkpoint(epoch, best=True)
 
             self.logger.info('-----------------------------------')
         self.save_checkpoint(epoch, best=False)
