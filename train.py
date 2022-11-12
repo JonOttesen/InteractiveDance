@@ -32,10 +32,6 @@ val_loader = Dataloader(
     no_preprocessed=True,
     )
 
-metrics = {
-    'MSE': torch.nn.MSELoss(),
-    'L1': torch.nn.L1Loss(),
-    }
 
 # audio_config.transformer.intermediate_size = 1024
 # motion_config.transformer.intermediate_size = 1024
@@ -116,7 +112,6 @@ loss = torch.nn.L1Loss()
 trainer = Trainer(
     model=model,
     loss_function=loss,
-    metric_ftns=metrics,
     config=config,
     data_loader=train_loader,
     valid_data_loader=valid_loader,
