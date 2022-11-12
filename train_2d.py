@@ -125,6 +125,7 @@ trainer = Trainer(
     device='cuda:0',
     project="dance_gen_2d",
     tags=["tiny_30fps"],
+    smpl_model="",
     # resume_id="elf7qts1"
     )
 
