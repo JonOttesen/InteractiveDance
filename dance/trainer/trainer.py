@@ -6,8 +6,10 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 
-from smplx import SMPL
-
+try:
+    from smplx import SMPL
+except:
+    pass
 # from torchvision.utils import make_grid
 # from base import BaseTrainer
 # from utils import inf_loop, MetricTracker
@@ -63,9 +65,10 @@ class Trainer(BaseTrainer):
         self.len_epoch = len(data_loader) if not self.iterative else self.inputs_pr_iteration
         self.batch_size = data_loader.batch_size
         self.log_step = int(self.len_epoch/(4)) if not isinstance(log_step, int) else log_step
-
-        smpl = SMPL(model_path=smpl_model, gender='MALE', batch_size=1).to(self.device)
-        self.scores = Scores(smpl)
+        
+        if self.valid_data_loader is not None:
+            smpl = SMPL(model_path=smpl_model, gender='MALE', batch_size=1).to(self.device)
+            self.scores = Scores(smpl)
 
     def _train_epoch(self, epoch):
         """

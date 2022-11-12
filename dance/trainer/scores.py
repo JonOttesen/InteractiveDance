@@ -8,10 +8,11 @@ from scipy.spatial.transform import Rotation as R
 import scipy.signal as scisignal
 from scipy import linalg
 
-
-from aist_plusplus.features.kinetic import extract_kinetic_features
-from aist_plusplus.features.manual import extract_manual_features
-
+try:
+    from aist_plusplus.features.kinetic import extract_kinetic_features
+    from aist_plusplus.features.manual import extract_manual_features
+except:
+    pass
 
 
 class Scores(object):
