@@ -114,7 +114,6 @@ loss = torch.nn.L1Loss()
 trainer = Trainer(
     model=model,
     loss_function=loss,
-    metric_ftns=None,
     config=config,
     data_loader=train_loader,
     valid_data_loader=None,
