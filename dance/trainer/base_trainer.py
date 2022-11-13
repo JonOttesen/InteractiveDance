@@ -148,12 +148,12 @@ class BaseTrainer:
             wandb.log(loss_val_dict, commit=True)
             if bool(val_dict):
                 val_loss = val_dict["val_loss"]
-
-                if epoch % self.save_period == 0:
-                    self.save_checkpoint(epoch, best=False)
                 if val_loss < self.min_validation_loss:
                     self.min_validation_loss = val_loss
                     self.save_checkpoint(epoch, best=True)
+
+            if epoch % self.save_period == 0:
+                self.save_checkpoint(epoch, best=False)
 
             self.logger.info('-----------------------------------')
         self.save_checkpoint(epoch, best=False)
