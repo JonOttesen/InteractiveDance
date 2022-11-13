@@ -38,10 +38,10 @@ val_loader = Dataloader(
 # multi_model_config.transformer.intermediate_size = 1024
 # multi_model_config.transformer.num_hidden_layers =  4
 
-# audio_config.transformer.intermediate_size = 1536
-# motion_config.transformer.intermediate_size = 1536
-# multi_model_config.transformer.intermediate_size = 1536
-# multi_model_config.transformer.num_hidden_layers =  6
+audio_config.transformer.intermediate_size = 1536
+motion_config.transformer.intermediate_size = 1536
+multi_model_config.transformer.intermediate_size = 1536
+multi_model_config.transformer.num_hidden_layers =  6
 
 model = FACTModel(audio_config, motion_config, multi_model_config, pred_length=20)
 
@@ -63,7 +63,7 @@ config = {
     "weight_decay": 0,
     "warmup_steps": 10,
     "lr_scheduler": "CosineAnnealingLR",
-    "save_dir": "/mnt/CRAI-NAS/all/jona/dance_models/original",
+    "save_dir": "/mnt/CRAI-NAS/all/jona/dance_models/small",
     "save_period": 20,
 }
 
@@ -122,7 +122,7 @@ trainer = Trainer(
     # log_step=2500,
     device='cuda:1',
     project="dance_genV2",
-    tags=["original"],
+    tags=["small"],
     # resume_id="elf7qts1"
     )
 
