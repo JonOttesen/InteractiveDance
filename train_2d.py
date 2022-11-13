@@ -26,7 +26,7 @@ train_loader = Dataloader(
     config=config,
     split="train",
     method="2d",
-    fps=30,
+    fps=15,
     )
 
 # val_loader = Dataloader(
