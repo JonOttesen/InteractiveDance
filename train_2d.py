@@ -12,7 +12,7 @@ from dance.loaders.loader import AISTDataset
 import warnings
 warnings.filterwarnings("ignore")
 
-fps = 30
+fps = 15
 
 dataset = AISTDataset("/itf-fi-ml/home/jonakri/dance/data")
 
@@ -143,7 +143,7 @@ trainer = Trainer(
     lr_scheduler=lr_scheduler,
     seed=None,
     # log_step=2500,
-    device='cuda:0',
+    device='cuda:1',
     project="dance_gen_2d",
     tags=["tiny_{}fps".format(str(fps))],
     smpl_model="",
