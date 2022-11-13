@@ -15,10 +15,15 @@ warnings.filterwarnings("ignore")
 
 dataset = AISTDataset("/itf-fi-ml/home/jonakri/dance/data")
 
+# config = {"audio_length": 180, "sequence_length": 90, "target_length": 20}  # 30 FPS 
+config = {"audio_length": 120, "sequence_length": 60, "target_length": 20}  # 15 FPS 
+# config = {"audio_length": 80, "sequence_length": 40, "target_length": 20}  # 10 FPS 
+
+
 train_loader = Dataloader(
     dataset, 
     "/itf-fi-ml/home/jonakri/dance/data/wav", 
-    config={"audio_length": 180, "sequence_length": 90, "target_length": 20}, 
+    config=config,
     split="train",
     method="2d",
     fps=30,
@@ -41,9 +46,20 @@ multi_model_config.transformer.num_hidden_layers =  4
 
 motion_config.feature_dim = 34
 
-audio_config.sequence_length = 180
-motion_config.sequence_length = 90
-multi_model_config.sequence_length = 180
+# 30 FPS
+# audio_config.sequence_length = 180
+# motion_config.sequence_length = 90
+# multi_model_config.sequence_length = 180
+
+# 15 FPS
+audio_config.sequence_length = 120
+motion_config.sequence_length = 60
+multi_model_config.sequence_length = 120
+
+# 10 FPS
+# audio_config.sequence_length = 80
+# motion_config.sequence_length = 40
+# multi_model_config.sequence_length = 80
 
 model = FACTModel(audio_config, motion_config, multi_model_config, out_dim=34, pred_length=20)
 
@@ -65,7 +81,7 @@ config = {
     "weight_decay": 0,
     "warmup_steps": 10,
     "lr_scheduler": "CosineAnnealingLR",
-    "save_dir": "/itf-fi-ml/home/jonakri/dance/2D/30fps",
+    "save_dir": "/itf-fi-ml/home/jonakri/dance/2D/15fps",
     "save_period": 10,
 }
 
@@ -121,9 +137,9 @@ trainer = Trainer(
     lr_scheduler=lr_scheduler,
     seed=None,
     # log_step=2500,
-    device='cuda:0',
+    device='cuda:1',
     project="dance_gen_2d",
-    tags=["tiny_30fps"],
+    tags=["tiny_15fps"],
     smpl_model="",
     # resume_id="elf7qts1"
     )
