@@ -150,7 +150,7 @@ class Dataloader:
 
                     if self.method == "2d":
                         for c in range(dance.shape[1]):
-                            if np.sum(np.isnan(dance[i: i + self.seq_len, c])) > 0:
+                            if np.sum(np.isnan(dance[i: i + self.seq_len + self.target_len, c])) > 0:
                                 continue
                             self.indices.append((i, c, music_name, dance_name))
                             if split == "test" or split == "val" and self.no_preprocessed:

@@ -20,8 +20,15 @@ train_loader = Dataloader(
     "/home/jon/Documents/dance/data/wav",
     config={"audio_length": 240, "sequence_length": 120, "target_length": 20}, 
     split="train",
-    method="smpl",
+    method="2d",
     )
+
+for i, j, k in train_loader:
+    # print(torch.sum(torch.isnan(i)), torch.sum(torch.isnan(j)), torch.sum(torch.isnan(k)))
+    if (torch.sum(torch.isnan(i)) + torch.sum(torch.isnan(j)) + torch.sum(torch.isnan(k))) > 0:
+        print(torch.sum(torch.isnan(i)), torch.sum(torch.isnan(j)), torch.sum(torch.isnan(k)))
+
+exit()
 
 val_loader = Dataloader(
     dataset, 
