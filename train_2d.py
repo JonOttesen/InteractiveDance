@@ -12,7 +12,7 @@ from dance.loaders.loader import AISTDataset
 import warnings
 warnings.filterwarnings("ignore")
 
-fps = 15
+fps = 30
 
 dataset = AISTDataset("/itf-fi-ml/home/jonakri/dance/data")
 

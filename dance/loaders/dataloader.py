@@ -16,9 +16,9 @@ from .loader import AISTDataset
 import warnings
 warnings.filterwarnings("ignore")
 
-def audio_features(audio_dir, audio_name, fps):
+def audio_features(audio_dir, audio_name):
     HOP_LENGTH = 512
-    SR = fps * HOP_LENGTH
+    SR = 60 * HOP_LENGTH
 
     def _get_tempo(audio_name):
         """Get tempo (BPM) for a music by parsing music name."""
@@ -134,7 +134,7 @@ class Dataloader:
 
             self.dances[piece] = deepcopy(motion)
             if music not in self.music.keys():
-                audio_feature = audio_features(self.audio_dir, music, self.fps)
+                audio_feature = audio_features(self.audio_dir, music)
                 self.music[music] = audio_feature
                 
         for music_name, audio in self.music.items():
